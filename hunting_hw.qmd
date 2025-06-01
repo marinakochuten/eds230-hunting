@@ -1,0 +1,86 @@
+---
+title: "Lotka-Volterra Model with Hunting"
+author: Marina Kochuten
+date: last-modified
+format: html
+embed-resources: true
+message: false
+warning: false
+---
+
+```{r}
+# Setup
+library(tidyverse)
+library(deSolve)
+library(here)
+library(purrr)
+
+source(here("lotv_mod_hunting.R"))
+```
+
+
+## Part 1
+
+Hunting was added to the lotvmodK function in a new R script, `lotv_mod_hunting.R`.
+
+## Part 2
+
+#### Define stability
+
+I am defining stability as maintaining predator populations above 200 and prey populations above 50 after 50 years. I chose these values to allow the population to grow from 1 over time, and because it is a reasonable ratio of predators to prey that also allows the species' to be maintained over time. 
+
+```{r}
+# Stability metric function
+
+```
+
+
+#### Explore hunting
+
+Explore how different hunting levels and different minimum prey populations (before hunting is allowed) are likely to effect the stability of the populations of both predator and prey.
+
+Use this exploration to recommend a hunting target that will be sustainable (e.g leave you with a stable prey and predator population). 
+
+
+It is up to you how you "explore" hunting - you can simply try different values of the parameters in your hunting model or do it more formally by running your model across a range of values. You could think about parameter interactions
+
+**Rubric!!:** 1-2 sentences that justify a decision or policy about the level of hunting that clearly arise from the exploration of stability
+
+```{r}
+# Set up base values for parameters
+base_params <- c(
+    rprey = 0.95,
+    alpha = 0.01,
+    eff = 0.6,
+    pmort = 0.4,
+    K = 2000
+)
+```
+
+```{r}
+pars <- c(base_params, rhunt = 0.01, prey_min = 100)
+currpop <- c(prey = 500, pred = 10)
+days <- seq(from = 1, to = 500)
+res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
+res_df <- as.data.frame(res)
+colnames(res_df) <- c("time", "prey", "pred")
+
+res_long <- res_df %>%
+    pivot_longer(cols = c(prey, pred), names_to = "species", values_to = "population")
+
+ggplot(res_long, aes(x = time, y = population, color = species)) +
+    geom_line(size = 1) +
+    labs(
+        title = "Predator and Prey Populations Over Time",
+        x = "Time (days)",
+        y = "Population",
+        color = "Species"
+    ) +
+    theme_minimal()
+```
+
+
+#### Results and recommendations
+
+**Rubric!!:** compared the stability metric across different values of parameters used to define hunting. The comparison should be explicit in the Rmarkdown - it could be a graph or a table but some way to show how different hunting levels influence stability
+
