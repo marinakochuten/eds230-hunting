@@ -61,6 +61,9 @@ base_params <- c(
 ```
 
 ```{r}
+# Explore hunting by running model across a range of values
+
+##### rhunt = 0.01 #####
 pars <- c(base_params, rhunt = 0.01, prey_min = 100)
 currpop <- c(prey = 500, pred = 10)
 days <- seq(from = 1, to = 500)
@@ -74,14 +77,58 @@ res_long <- res_df %>%
 ggplot(res_long, aes(x = time, y = population, color = species)) +
     geom_line(size = 1) +
     labs(
-        title = "Predator and Prey Populations Over Time",
+        title = "Predator and Prey Populations Over Time with rhunt = 0.01",
         x = "Time (days)",
         y = "Population",
         color = "Species"
     ) +
     theme_minimal()
 ```
+```{r}
+##### rhunt = 0.05 #####
+pars <- c(base_params, rhunt = 0.05, prey_min = 100)
+currpop <- c(prey = 500, pred = 10)
+days <- seq(from = 1, to = 500)
+res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
+res_df <- as.data.frame(res)
+colnames(res_df) <- c("time", "prey", "pred")
 
+res_long <- res_df %>%
+    pivot_longer(cols = c(prey, pred), names_to = "species", values_to = "population")
+
+ggplot(res_long, aes(x = time, y = population, color = species)) +
+    geom_line(size = 1) +
+    labs(
+        title = "Predator and Prey Populations Over Time with rhunt = 0.01",
+        x = "Time (days)",
+        y = "Population",
+        color = "Species"
+    ) +
+    theme_minimal()
+```
+```{r}
+##### rhunt = 0.04 #####
+pars <- c(base_params, rhunt = 0.048, prey_min = 100)
+currpop <- c(prey = 500, pred = 10)
+days <- seq(from = 1, to = 500)
+res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
+res_df <- as.data.frame(res)
+colnames(res_df) <- c("time", "prey", "pred")
+
+res_long <- res_df %>%
+    pivot_longer(cols = c(prey, pred), names_to = "species", values_to = "population")
+
+ggplot(res_long, aes(x = time, y = population, color = species)) +
+    geom_line(size = 1) +
+    labs(
+        title = "Predator and Prey Populations Over Time with rhunt = 0.01",
+        x = "Time (days)",
+        y = "Population",
+        color = "Species"
+    ) +
+    theme_minimal()
+```
+The threshold for hunting to support a stable population is 0.048.
 
 #### Results and recommendations
 
