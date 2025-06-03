@@ -23,7 +23,11 @@ source(here("lotv_mod_hunting.R"))
 
 Hunting was added to the lotvmodK function in a new R script, `lotv_mod_hunting.R`. 
 
-Add more text about how hunting was added to the function 
+We added hunting by adding a new parameter, `rhunt`, which is the rate of hunting, and `prey_min`, which is the minimum amount of prey needed before hunting is allowed.
+
+We then say that the number of prey hunted is rhunt * prey if the min_prey is met. Otherwise, number of prey hunted is 0. 
+
+We also ensure that our model does not hunt more prey than exist. We do this by choosing whichever number is smaller after calculating hunt - hunt or prey. This means that if hunt is less than prey available, that will be the number of prey hunting. Otherwise, we would hunt all the prey and make hunt equal to prey. 
 
 
 ## Part 2
