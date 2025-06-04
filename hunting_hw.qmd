@@ -34,11 +34,26 @@ We also ensure that our model does not hunt more prey than exist. We do this by 
 
 #### Define stability
 
-We are defining stability as maintaining predator populations above 200 and prey populations above 50 after 50 years. I chose these values to allow the population to grow from 1 over time, and because it is a reasonable ratio of predators to prey that also allows the species' to be maintained over time. 
+We are defining stability as maintaining predator and prey populations above 50 after 500 days. I chose these values to allow the population to grow from 1 over time, and because it is a reasonable ratio of predators to prey that also allows the species' to be maintained over time. 
 
 ```{r}
 # Stability metric function
+check_stability <- function(sim_data, prey_thresh = 50, pred_thresh = 50) {
+  final_prey <- sim_data %>% 
+    filter(species == "prey", time == 500) %>% 
+    pull(population)
 
+  final_pred <- sim_data %>% 
+    filter(species == "pred", time == 500) %>% 
+    pull(population)
+
+  # If either value is missing (e.g., model didn't run that far), treat as unstable
+  if (length(final_prey) == 0 || length(final_pred) == 0) {
+    return(FALSE)
+  }
+
+  return(final_prey > prey_thresh && final_pred > pred_thresh)
+}
 ```
 
 
@@ -52,95 +67,6 @@ Use this exploration to recommend a hunting target that will be sustainable (e.g
 It is up to you how you "explore" hunting - you can simply try different values of the parameters in your hunting model or do it more formally by running your model across a range of values. You could think about parameter interactions
 
 **Rubric!!:** 1-2 sentences that justify a decision or policy about the level of hunting that clearly arise from the exploration of stability
-
-```{r}
-# Set up base values for parameters
-base_params <- c(
-    rprey = 0.95,
-    alpha = 0.01,
-    eff = 0.6,
-    pmort = 0.4,
-    K = 2000
-)
-```
-
-
-```{r}
-
-# Explore hunting by running model across a range of values
-
-##### rhunt = 0.01 #####
-pars <- c(base_params, rhunt = 0.01, prey_min = 100)
-currpop <- c(prey = 500, pred = 10)
-days <- seq(from = 1, to = 500)
-res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
-res_df <- as.data.frame(res)
-colnames(res_df) <- c("time", "prey", "pred")
-
-res_long <- res_df %>%
-    pivot_longer(cols = c(prey, pred), names_to = "species", values_to = "population")
-
-ggplot(res_long, aes(x = time, y = population, color = species)) +
-    geom_line(size = 1) +
-    labs(
-        title = "Predator and Prey Populations Over Time with rhunt = 0.01",
-        x = "Time (days)",
-        y = "Population",
-        color = "Species"
-    ) +
-    theme_minimal()
-```
-```{r}
-##### rhunt = 0.05 #####
-pars <- c(base_params, rhunt = 0.05, prey_min = 100)
-currpop <- c(prey = 500, pred = 10)
-days <- seq(from = 1, to = 500)
-res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
-res_df <- as.data.frame(res)
-colnames(res_df) <- c("time", "prey", "pred")
-
-res_long <- res_df %>%
-    pivot_longer(cols = c(prey, pred), names_to = "species", values_to = "population")
-
-ggplot(res_long, aes(x = time, y = population, color = species)) +
-    geom_line(size = 1) +
-    labs(
-        title = "Predator and Prey Populations Over Time with rhunt = 0.05",
-        x = "Time (days)",
-        y = "Population",
-        color = "Species"
-    ) +
-    theme_minimal()
-
-```
-```{r}
-##### rhunt = 0.04 #####
-pars <- c(base_params, rhunt = 0.04, prey_min = 100)
-currpop <- c(prey = 500, pred = 10)
-days <- seq(from = 1, to = 500)
-res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
-res_df <- as.data.frame(res)
-colnames(res_df) <- c("time", "prey", "pred")
-
-res_long <- res_df %>%
-    pivot_longer(cols = c(prey, pred), names_to = "species", values_to = "population")
-
-
-
-ggplot(res_long, aes(x = time, y = population, color = species)) +
-    geom_line(size = 1) +
-    labs(
-        title = "Predator and Prey Populations Over Time with rhunt = 0.04",
-        x = "Time (days)",
-        y = "Population",
-        color = "Species"
-    ) +
-    theme_minimal()
-```
-The threshold for hunting to support a stable population is 0.048.
-
-
-
 
 
 ```{r}
@@ -178,6 +104,71 @@ ggplot(all_results, aes(x = time, y = population, color = species)) +
   ) +
   theme_minimal()
 ```
+
+```{r}
+# Set base parameters
+base_params <- c(
+  rprey = 0.95,
+  alpha = 0.01,
+  eff = 0.6,
+  pmort = 0.4,
+  K = 2000
+)
+
+# Hunting and prey_min values to test
+rhunt_values <- c(0.01, 0.08, 0.12, 0.2)
+prey_min_values <- c(50, 100, 150)
+
+# Time and initial populations
+days <- seq(from = 1, to = 500)
+currpop <- c(prey = 500, pred = 10)
+
+# Create all combinations of rhunt and prey_min
+param_grid <- expand.grid(rhunt = rhunt_values, prey_min = prey_min_values)
+
+# Run model and store results
+results <- pmap(param_grid, function(rhunt, prey_min) {
+  pars <- c(base_params, rhunt = rhunt, prey_min = prey_min)
+  res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
+  res_df <- as.data.frame(res)
+  colnames(res_df) <- c("time", "prey", "pred")
+  
+  res_long <- res_df %>%
+    pivot_longer(cols = c(prey, pred), names_to = "species", values_to = "population") %>%
+    mutate(rhunt = rhunt, prey_min = prey_min)
+  
+  return(res_long)
+})
+
+# Apply stability check
+stability_results <- map_lgl(results, check_stability)
+
+# Build stability label table
+stability_labels <- param_grid %>%
+  mutate(stable = ifelse(stability_results, "Stable", "Unstable"))
+
+# Combine all results
+all_results <- bind_rows(results)
+
+# Add stability labels to each simulation
+all_results_labeled <- left_join(all_results, stability_labels, by = c("rhunt", "prey_min")) %>%
+  mutate(facet_label = paste0("rhunt = ", rhunt, ", prey_min = ", prey_min, "\n(", stable, ")"))
+
+# Plot
+ggplot(all_results_labeled, aes(x = time, y = population, color = species)) +
+  geom_line(size = 1) +
+  facet_wrap(~ facet_label) +
+  labs(
+    title = "Predator and Prey Populations Over Time for Different Hunting Scenarios",
+    subtitle = "Facet titles indicate rhunt, prey_min, and stability",
+    x = "Time (days)",
+    y = "Population",
+    color = "Species"
+  ) +
+  theme_minimal()
+```
+
+ 
   
 #### Results and recommendations
 
