@@ -60,28 +60,42 @@ base_params <- c(
 )
 ```
 
+
 ```{r}
-pars <- c(base_params, rhunt = 0.01, prey_min = 100)
-currpop <- c(prey = 500, pred = 10)
-days <- seq(from = 1, to = 500)
-res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
-res_df <- as.data.frame(res)
-colnames(res_df) <- c("time", "prey", "pred")
+# Create plot to see species pop over time for various levels of rhunt
 
-res_long <- res_df %>%
-    pivot_longer(cols = c(prey, pred), names_to = "species", values_to = "population")
+# Parameters and setup 
+rhunt_values <- c(0.01, 0.08, 0.12, 0.2) # vary rhunt values from 0.01 to 0.2
+days <- seq(from = 1, to = 500) # set series of days to graph over 
+currpop <- c(prey = 500, pred = 10) # set current prey and predator populations 
 
-ggplot(res_long, aes(x = time, y = population, color = species)) +
-    geom_line(size = 1) +
-    labs(
-        title = "Predator and Prey Populations Over Time",
-        x = "Time (days)",
-        y = "Population",
-        color = "Species"
-    ) +
-    theme_minimal()
+# Run ODE model for each rhunt 
+results <- lapply(rhunt_values, function(r) {
+  pars <- c(base_params, rhunt = r, prey_min = 100)
+  res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
+  res_df <- as.data.frame(res)
+  colnames(res_df) <- c("time", "prey", "pred")
+  res_long <- res_df %>%
+    pivot_longer(cols = c(prey, pred), names_to = "species", values_to = "population") %>%
+    mutate(rhunt = r)
+  return(res_long)
+})
+
+# Combine into one data frame
+all_results <- bind_rows(results)
+
+# Create plot for each result of each rhunt value
+ggplot(all_results, aes(x = time, y = population, color = species)) +
+  geom_line(size = 1) +
+  facet_wrap(~ rhunt, labeller = label_bquote(rhunt == .(rhunt))) +
+  labs(
+    title = "Predator and Prey Populations Over Time for Different Hunting Rates",
+    x = "Time (days)",
+    y = "Population",
+    color = "Species"
+  ) +
+  theme_minimal()
 ```
-
 
 #### Results and recommendations
 
