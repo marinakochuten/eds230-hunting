@@ -105,7 +105,7 @@ res_long <- res_df %>%
 ggplot(res_long, aes(x = time, y = population, color = species)) +
     geom_line(size = 1) +
     labs(
-        title = "Predator and Prey Populations Over Time with rhunt = 0.01",
+        title = "Predator and Prey Populations Over Time with rhunt = 0.05",
         x = "Time (days)",
         y = "Population",
         color = "Species"
@@ -115,7 +115,7 @@ ggplot(res_long, aes(x = time, y = population, color = species)) +
 ```
 ```{r}
 ##### rhunt = 0.04 #####
-pars <- c(base_params, rhunt = 0.048, prey_min = 100)
+pars <- c(base_params, rhunt = 0.04, prey_min = 100)
 currpop <- c(prey = 500, pred = 10)
 days <- seq(from = 1, to = 500)
 res <- ode(y = currpop, times = days, func = lotv_mod_hunting, parms = pars)
@@ -130,7 +130,7 @@ res_long <- res_df %>%
 ggplot(res_long, aes(x = time, y = population, color = species)) +
     geom_line(size = 1) +
     labs(
-        title = "Predator and Prey Populations Over Time with rhunt = 0.01",
+        title = "Predator and Prey Populations Over Time with rhunt = 0.04",
         x = "Time (days)",
         y = "Population",
         color = "Species"
