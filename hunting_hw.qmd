@@ -34,7 +34,7 @@ We also ensure that our model does not hunt more prey than exist. We do this by 
 
 #### Define stability
 
-I am defining stability as maintaining predator populations above 200 and prey populations above 50 after 50 years. I chose these values to allow the population to grow from 1 over time, and because it is a reasonable ratio of predators to prey that also allows the species' to be maintained over time. 
+We are defining stability as maintaining predator populations above 200 and prey populations above 50 after 50 years. I chose these values to allow the population to grow from 1 over time, and because it is a reasonable ratio of predators to prey that also allows the species' to be maintained over time. 
 
 ```{r}
 # Stability metric function
