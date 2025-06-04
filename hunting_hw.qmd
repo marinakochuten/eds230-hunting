@@ -8,6 +8,8 @@ message: false
 warning: false
 ---
 
+GitHub repository: https://github.com/marinakochuten/eds230-hunting
+
 ```{r}
 # Setup
 library(tidyverse)
@@ -62,12 +64,16 @@ check_stability <- function(sim_data, prey_thresh = 50, pred_thresh = 50) {
 Explore how different hunting levels and different minimum prey populations (before hunting is allowed) are likely to effect the stability of the populations of both predator and prey.
 
 Use this exploration to recommend a hunting target that will be sustainable (e.g leave you with a stable prey and predator population). 
-
-
-It is up to you how you "explore" hunting - you can simply try different values of the parameters in your hunting model or do it more formally by running your model across a range of values. You could think about parameter interactions
-
-**Rubric!!:** 1-2 sentences that justify a decision or policy about the level of hunting that clearly arise from the exploration of stability
-
+```{r}
+# Set base parameters
+base_params <- c(
+  rprey = 0.95,
+  alpha = 0.01,
+  eff = 0.6,
+  pmort = 0.4,
+  K = 2000
+)
+```
 
 ```{r}
 # Create plot to see species pop over time for various levels of rhunt
@@ -105,16 +111,11 @@ ggplot(all_results, aes(x = time, y = population, color = species)) +
   theme_minimal()
 ```
 
-```{r}
-# Set base parameters
-base_params <- c(
-  rprey = 0.95,
-  alpha = 0.01,
-  eff = 0.6,
-  pmort = 0.4,
-  K = 2000
-)
 
+Based on the results of these plots, we will test the models using a hunting rate between 0.01 and 0.2. It seems that anything beyond that range would result in a lot of unstable population levels. Additionally, we will explore the different values of minimum prey population for hunting to be allowed (prey_min) as that is a parameter that is directly related to hunting. From this, we should be able to get a sense of the parameter range that would allow for sustainable hunting. 
+
+
+```{r}
 # Hunting and prey_min values to test
 rhunt_values <- c(0.01, 0.08, 0.12, 0.2)
 prey_min_values <- c(50, 100, 150)
@@ -168,12 +169,10 @@ ggplot(all_results_labeled, aes(x = time, y = population, color = species)) +
   theme_minimal()
 ```
 
- 
   
 #### Results and recommendations
 
-**Rubric!!:** compared the stability metric across different values of parameters used to define hunting. The comparison should be explicit in the Rmarkdown - it could be a graph or a table but some way to show how different hunting levels influence stability
+We ran the model across multiple values of the hunting rate of prey as well as with different values of minimum prey population for hunting to be allowed. The values of hunting rate included 0.01, 0.08, 0.12, 0.2, with a larger value indicating a higher hunting pressure. The minimum prey populations for hunting to be allowed were 50, 100, 150. Of the 4 values of hunting rate, all of them besides 0.2 and 0.12 resulted in a stable population of predator and prey regardless of the minimum prey populations for hunting. However, for hunting rate equal to 0.12, it was unstable for a minimum prey population of 50. And the hunting rate value of 0.2 resulted in a unstable status for all prey populations besides when minimum prey population for hunting was equal to 150. In order to maintain stable prey and predator populations while hunting, it is recommended that the hunting rate remain at or below 0.12 and if it is at 0.12, the minimum prey population for hunting to be allowed must exceed 50 individuals. 
 
-Jordan do graph here to show how different hunting levels impact number of pred and prey 
 
 
