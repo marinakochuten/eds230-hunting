@@ -177,7 +177,7 @@ ggplot(all_results, aes(x = time, y = population, color = species)) +
     color = "Species"
   ) +
   theme_minimal()
-  ```
+```
   
 #### Results and recommendations
 
